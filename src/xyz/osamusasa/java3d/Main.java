@@ -2,6 +2,7 @@ package xyz.osamusasa.java3d;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 
 public class Main {
     public static void main(String args[]) {
@@ -24,18 +25,7 @@ public class Main {
         Canvas canvas = new Canvas() {
             @Override
             public void paint(Graphics g) {
-                g.drawLine((int)c.a.x, (int)c.a.y, (int)c.b.x, (int)c.a.y);
-                g.drawLine((int)c.b.x, (int)c.b.y, (int)c.c.x, (int)c.c.y);
-                g.drawLine((int)c.c.x, (int)c.c.y, (int)c.d.x, (int)c.d.y);
-                g.drawLine((int)c.d.x, (int)c.d.y, (int)c.a.x, (int)c.a.y);
-                g.drawLine((int)c.a.x, (int)c.a.y, (int)c.e.x, (int)c.e.y);
-                g.drawLine((int)c.b.x, (int)c.b.y, (int)c.f.x, (int)c.f.y);
-                g.drawLine((int)c.c.x, (int)c.c.y, (int)c.g.x, (int)c.g.y);
-                g.drawLine((int)c.d.x, (int)c.d.y, (int)c.h.x, (int)c.h.y);
-                g.drawLine((int)c.e.x, (int)c.e.y, (int)c.f.x, (int)c.f.y);
-                g.drawLine((int)c.f.x, (int)c.f.y, (int)c.g.x, (int)c.g.y);
-                g.drawLine((int)c.g.x, (int)c.g.y, (int)c.h.x, (int)c.h.y);
-                g.drawLine((int)c.h.x, (int)c.h.y, (int)c.e.x, (int)c.e.y);
+                c.draw(g);
             }
         };
 
@@ -53,6 +43,16 @@ class Cube{
      */
     Point3D a,b,c,d,e,f,g,h;
 
+    /**
+     * face[0] a-b-c-d
+     * face[1] b-f-g-c
+     * face[2] f-e-h-g
+     * face[3] e-a-d-h
+     * face[4] a-e-f-b
+     * face[5] d-h-g-c
+     */
+    Polygon3D[] face;
+
     Cube(Point3D base, float w){
         a = new Point3D(base);
         b = new Point3D(base, w, 0, 0);
@@ -62,91 +62,27 @@ class Cube{
         f = new Point3D(base, w, 0, w);
         g = new Point3D(base, w, w, w);
         h = new Point3D(base, 0, w, w);
+
+        face = new Polygon3D[6];
+        face[0] = new Polygon3D(a,b,c,d);
+        face[1] = new Polygon3D(b,f,g,c);
+        face[2] = new Polygon3D(f,e,h,g);
+        face[3] = new Polygon3D(e,a,d,h);
+        face[4] = new Polygon3D(a,e,f,b);
+        face[5] = new Polygon3D(d,h,g,c);
     }
 
     void rotationX(float axisY, float axisZ, double angle){
-        a = new Point3D(
-                a.x,
-                (a.y-axisY)*Math.cos(angle)+(a.z-axisZ)*Math.sin(angle)+axisY,
-                (axisY-a.y)*Math.sin(angle)+(a.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        b = new Point3D(
-                b.x,
-                (b.y-axisY)*Math.cos(angle)+(b.z-axisZ)*Math.sin(angle)+axisY,
-                (axisY-b.y)*Math.sin(angle)+(b.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        c = new Point3D(
-                c.x,
-                (c.y-axisY)*Math.cos(angle)+(c.z-axisZ)*Math.sin(angle)+axisY,
-                (axisY-c.y)*Math.sin(angle)+(c.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        d = new Point3D(
-                d.x,
-                (d.y-axisY)*Math.cos(angle)+(d.z-axisZ)*Math.sin(angle)+axisY,
-                (axisY-d.y)*Math.sin(angle)+(d.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        e = new Point3D(
-                e.x,
-                (e.y-axisY)*Math.cos(angle)+(e.z-axisZ)*Math.sin(angle)+axisY,
-                (axisY-e.y)*Math.sin(angle)+(e.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        f = new Point3D(
-                f.x,
-                (f.y-axisY)*Math.cos(angle)+(f.z-axisZ)*Math.sin(angle)+axisY,
-                (axisY-f.y)*Math.sin(angle)+(f.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        g = new Point3D(
-                g.x,
-                (g.y-axisY)*Math.cos(angle)+(g.z-axisZ)*Math.sin(angle)+axisY,
-                (axisY-g.y)*Math.sin(angle)+(g.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        h = new Point3D(
-                h.x,
-                (h.y-axisY)*Math.cos(angle)+(h.z-axisZ)*Math.sin(angle)+axisY,
-                (axisY-h.y)*Math.sin(angle)+(h.z-axisZ)*Math.cos(angle)+axisZ
-        );
+        Arrays.asList(face).forEach(p->p.rotationX(axisY, axisZ, angle));
     }
     void rotationY(float axisX, float axisZ, double angle){
-        a = new Point3D(
-                (a.x-axisX)*Math.cos(angle)-(a.z-axisZ)*Math.sin(angle)+axisX,
-                a.y,
-                (a.x-axisX)*Math.sin(angle)+(a.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        b = new Point3D(
-                (b.x-axisX)*Math.cos(angle)-(b.z-axisZ)*Math.sin(angle)+axisX,
-                b.y,
-                (b.x-axisX)*Math.sin(angle)+(b.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        c = new Point3D(
-                (c.x-axisX)*Math.cos(angle)-(c.z-axisZ)*Math.sin(angle)+axisX,
-                c.y,
-                (c.x-axisX)*Math.sin(angle)+(c.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        d = new Point3D(
-                (d.x-axisX)*Math.cos(angle)-(d.z-axisZ)*Math.sin(angle)+axisX,
-                d.y,
-                (d.x-axisX)*Math.sin(angle)+(d.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        e = new Point3D(
-                (e.x-axisX)*Math.cos(angle)-(e.z-axisZ)*Math.sin(angle)+axisX,
-                e.y,
-                (e.x-axisX)*Math.sin(angle)+(e.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        f = new Point3D(
-                (f.x-axisX)*Math.cos(angle)-(f.z-axisZ)*Math.sin(angle)+axisX,
-                f.y,
-                (f.x-axisX)*Math.sin(angle)+(f.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        g = new Point3D(
-                (g.x-axisX)*Math.cos(angle)-(g.z-axisZ)*Math.sin(angle)+axisX,
-                g.y,
-                (g.x-axisX)*Math.sin(angle)+(g.z-axisZ)*Math.cos(angle)+axisZ
-        );
-        h = new Point3D(
-                (h.x-axisX)*Math.cos(angle)-(h.z-axisZ)*Math.sin(angle)+axisX,
-                h.y,
-                (h.x-axisX)*Math.sin(angle)+(h.z-axisZ)*Math.cos(angle)+axisZ
-        );
+        Arrays.asList(face).forEach(p->p.rotationY(axisX, axisZ, angle));
+    }
+
+    void draw(Graphics g){
+        for(Polygon3D p:face){
+            g.drawPolygon(p.getDrawablePolygon(null));
+        }
     }
 }
 
@@ -168,5 +104,111 @@ class Point3D{
         this.y = p.y+dy;
         this.z = p.z+dz;
     }
+}
 
+class Polygon3D{
+    int len;
+    double[] xpoints;
+    double[] ypoints;
+    double[] zpoints;
+
+    public static final int MIN_LENGTH = 4;
+
+    private Polygon3D(int size){
+        len = size;
+        xpoints = new double[len];
+        ypoints = new double[len];
+        zpoints = new double[len];
+    }
+    Polygon3D(){
+        this(MIN_LENGTH);
+        Arrays.fill(xpoints, 0.0);
+        Arrays.fill(ypoints, 0.0);
+        Arrays.fill(zpoints, 0.0);
+    }
+    Polygon3D(Point3D... points){
+        this(points.length);
+        for(int i=0;i<points.length;i++){
+            xpoints[i] = points[i].x;
+            ypoints[i] = points[i].y;
+            zpoints[i] = points[i].z;
+        }
+    }
+
+    /**
+     * ３次元上のポリゴンを平面に投影する
+     *
+     * 現在は、z軸のデータを消して２次元のポリゴンにしている
+     *
+     * @param camera 使ってない
+     * @return 平面に投影したポリゴン
+     */
+    Polygon getDrawablePolygon(Camera camera){
+        int len = Math.min(xpoints.length, ypoints.length);
+        int[] x = new int[len];
+        int[] y = new int[len];
+        for(int i=0;i<len;i++){
+            x[i] = (int)xpoints[i];
+            y[i] = (int)ypoints[i];
+        }
+        return new Polygon(x,y,len);
+    }
+
+    /**
+     * x軸と平行な軸を中心に回転
+     *
+     * @param axisY 回転軸のy座標
+     * @param axisZ 回転軸のz座標
+     * @param angle 回転角度
+     */
+    void rotationX(float axisY, float axisZ, double angle){
+        double y,z;
+        for(int i=0;i<len;i++){
+            y = (ypoints[i]-axisY)*Math.cos(angle)+(zpoints[i]-axisZ)*Math.sin(angle)+axisY;
+            z = (axisY-ypoints[i])*Math.sin(angle)+(zpoints[i]-axisZ)*Math.cos(angle)+axisZ;
+            ypoints[i] = y;
+            zpoints[i] = z;
+        }
+    }
+    /**
+     * y軸と平行な軸を中心に回転
+     *
+     * @param axisX 回転軸のx座標
+     * @param axisZ 回転軸のz座標
+     * @param angle 回転角度
+     */
+    void rotationY(float axisX, float axisZ, double angle){
+        double x,z;
+        for(int i=0;i<len;i++){
+            x = (xpoints[i]-axisX)*Math.cos(angle)-(zpoints[i]-axisZ)*Math.sin(angle)+axisX;
+            z = (xpoints[i]-axisX)*Math.sin(angle)+(zpoints[i]-axisZ)*Math.cos(angle)+axisZ;
+            xpoints[i] = x;
+            zpoints[i] = z;
+        }
+    }
+}
+
+class Vector3D{
+    double x,y,z;
+
+    Vector3D(){
+        x=0.0;
+        y=0.0;
+        z=0.0;
+    }
+    Vector3D(double x, double y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+}
+
+class Camera{
+    Vector3D posission;
+    Vector3D direction;
+
+    Camera(Vector3D p, Vector3D d){
+        posission = p;
+        direction = d;
+    }
 }

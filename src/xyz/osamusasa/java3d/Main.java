@@ -22,10 +22,15 @@ public class Main {
         c.rotationX(150, 150, Math.PI/4);
         c.rotationY(150, 150, Math.PI/4);
 
+        Cube c2 = new Cube(new Point3D(400, 100, 100), 100);
+        c2.rotationX(150, 150, Math.PI/4);
+        c2.rotationY(150, 150, -Math.PI/4);
+
         Canvas canvas = new Canvas() {
             @Override
             public void paint(Graphics g) {
                 c.draw(g);
+                c2.draw(g);
             }
         };
 
@@ -53,6 +58,15 @@ class Cube{
      */
     Polygon3D[] face;
 
+    //視点
+    Point3D see;
+
+    /**
+     * 見えない部分を描画するか
+     * trueなら見えない部分は点線で描画する
+     */
+    boolean isDrawingInvisible;
+
     Cube(Point3D base, float w){
         a = new Point3D(base);
         b = new Point3D(base, w, 0, 0);
@@ -69,7 +83,10 @@ class Cube{
         face[2] = new Polygon3D(f,e,h,g);
         face[3] = new Polygon3D(e,a,d,h);
         face[4] = new Polygon3D(a,e,f,b);
-        face[5] = new Polygon3D(d,h,g,c);
+        face[5] = new Polygon3D(d,c,g,h);
+
+        see = new Point3D(base.x+w/2, base.y+w/2, base.z+2*w);
+        isDrawingInvisible = false;
     }
 
     void rotationX(float axisY, float axisZ, double angle){
@@ -80,9 +97,27 @@ class Cube{
     }
 
     void draw(Graphics g){
+        Vector3D look,norm;
+        Graphics2D g2 = (Graphics2D)g;
+        BasicStroke bs1 = (BasicStroke) g2.getStroke();
+        BasicStroke bs2 = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1.0f, new float[] {6}, 0);
         for(Polygon3D p:face){
-            g.drawPolygon(p.getDrawablePolygon(null));
+            look = new Vector3D(p.getPoint(0), see);
+            norm = p.getNormalVect();
+
+            if(Vector3D.dotprod(look, norm) < 0){
+                if(isDrawingInvisible){
+                    g2.setStroke(bs2);
+                    g.drawPolygon(p.getDrawablePolygon());
+                }
+            }else{
+                g2.setStroke(bs1);
+                g.drawPolygon(p.getDrawablePolygon());
+            }
+
         }
+
+        g2.setStroke(bs1);
     }
 }
 
@@ -140,10 +175,9 @@ class Polygon3D{
      *
      * 現在は、z軸のデータを消して２次元のポリゴンにしている
      *
-     * @param camera 使ってない
      * @return 平面に投影したポリゴン
      */
-    Polygon getDrawablePolygon(Camera camera){
+    Polygon getDrawablePolygon(){
         int len = Math.min(xpoints.length, ypoints.length);
         int[] x = new int[len];
         int[] y = new int[len];
@@ -152,6 +186,21 @@ class Polygon3D{
             y[i] = (int)ypoints[i];
         }
         return new Polygon(x,y,len);
+    }
+
+    /**
+     * 指定された量だけ移動させる
+     *
+     * @param dx x軸の移動量
+     * @param dy y軸の移動量
+     * @param dz z軸の移動量
+     */
+    void move(float dx, float dy, float dz){
+        for(int i=0;i<len;i++){
+            xpoints[i] += dx;
+            ypoints[i] += dy;
+            zpoints[i] += dz;
+        }
     }
 
     /**
@@ -186,6 +235,38 @@ class Polygon3D{
             zpoints[i] = z;
         }
     }
+
+    Point3D getPoint(int n){
+        return new Point3D(xpoints[n], ypoints[n], zpoints[n]);
+    }
+
+    /**
+     * 法線ベクトルを計算して返す
+     *
+     * @return ポリゴンの法線ベクトル
+     */
+    Vector3D getNormalVect(){
+        Vector3D normal = Vector3D.crossprod(
+                new Vector3D(
+                        new Point3D(xpoints[1],ypoints[1],zpoints[1]),
+                        new Point3D(xpoints[0],ypoints[0],zpoints[0])
+                ),
+                new Vector3D(
+                        new Point3D(xpoints[2],ypoints[2],zpoints[2]),
+                        new Point3D(xpoints[1],ypoints[1],zpoints[1])
+                )
+        );
+        return normal;
+    }
+
+    @Override
+    public String toString() {
+        return "Polygon3D{" +
+                "xpoints=" + Arrays.toString(xpoints) +
+                ", ypoints=" + Arrays.toString(ypoints) +
+                ", zpoints=" + Arrays.toString(zpoints) +
+                '}';
+    }
 }
 
 class Vector3D{
@@ -201,14 +282,46 @@ class Vector3D{
         this.y = y;
         this.z = z;
     }
-}
+    Vector3D(Point3D base, Point3D direction){
+        this(
+                direction.x-base.x,
+                direction.y-base.y,
+                direction.z-base.z
+        );
+    }
 
-class Camera{
-    Vector3D posission;
-    Vector3D direction;
+    /**
+     * 2つのベクトルの内積を計算する
+     *
+     * @param v1 ベクトル
+     * @param v2 ベクトル
+     * @return ２つのベクトルの内積を表す新しいベクトルオブジェクト
+     */
+    static double dotprod(Vector3D v1, Vector3D v2){
+        return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+    }
 
-    Camera(Vector3D p, Vector3D d){
-        posission = p;
-        direction = d;
+    /**
+     * 2つのベクトルの外積を計算する
+     *
+     * @param v1 ベクトル
+     * @param v2 ベクトル
+     * @return ２つのベクトルの外積を表す新しいベクトルオブジェクト
+     */
+    static Vector3D crossprod(Vector3D v1, Vector3D v2){
+        return new Vector3D(
+                v1.y*v2.z - v1.z*v2.y,
+                v1.z*v2.x - v1.x*v2.z,
+                v1.x*v2.y - v1.y*v2.x
+        );
+    }
+
+    @Override
+    public String toString() {
+        return "Vector3D{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                '}';
     }
 }

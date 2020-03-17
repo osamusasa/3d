@@ -4,10 +4,10 @@ import java.awt.*;
 import java.util.Arrays;
 
 public class Polygon3D {
-    int len;
-    double[] xpoints;
-    double[] ypoints;
-    double[] zpoints;
+    private int len;
+    private double[] xpoints;
+    private double[] ypoints;
+    private double[] zpoints;
 
     public static final int MIN_LENGTH = 4;
 
@@ -99,6 +99,9 @@ public class Polygon3D {
     }
 
     Point3D getPoint(int n){
+        if(n<0||n>=len){
+            throw new IndexOutOfBoundsException();
+        }
         return new Point3D(xpoints[n], ypoints[n], zpoints[n]);
     }
 

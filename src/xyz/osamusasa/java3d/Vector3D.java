@@ -1,7 +1,7 @@
 package xyz.osamusasa.java3d;
 
 public class Vector3D {
-    double x,y,z;
+    private double x,y,z;
 
     Vector3D(){
         x=0.0;

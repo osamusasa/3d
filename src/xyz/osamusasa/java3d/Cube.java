@@ -10,7 +10,7 @@ public class Cube {
      *  a-e, b-f, c-g, d-h,
      *  e-f, f-g, g-h, h-e
      */
-    Point3D a,b,c,d,e,f,g,h;
+    private Point3D a,b,c,d,e,f,g,h;
 
     /**
      * face[0] a-b-c-d
@@ -20,16 +20,16 @@ public class Cube {
      * face[4] a-e-f-b
      * face[5] d-h-g-c
      */
-    Polygon3D[] face;
+    private Polygon3D[] face;
 
     //視点
-    Point3D see;
+    private Point3D see;
 
     /**
      * 見えない部分を描画するか
      * trueなら見えない部分は点線で描画する
      */
-    boolean isDrawingInvisible;
+    private boolean isDrawingInvisible;
 
     Cube(Point3D base, float w){
         a = new Point3D(base);
@@ -63,24 +63,24 @@ public class Cube {
     void draw(Graphics g){
         Vector3D look,norm;
         Graphics2D g2 = (Graphics2D)g;
-        BasicStroke bs1 = (BasicStroke) g2.getStroke();
-        BasicStroke bs2 = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1.0f, new float[] {6}, 0);
+        BasicStroke solidLine = (BasicStroke) g2.getStroke();
+        BasicStroke dottedLine = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1.0f, new float[] {6}, 0);
         for(Polygon3D p:face){
             look = new Vector3D(p.getPoint(0), see);
             norm = p.getNormalVect();
 
             if(Vector3D.dotprod(look, norm) < 0){
                 if(isDrawingInvisible){
-                    g2.setStroke(bs2);
+                    g2.setStroke(dottedLine);
                     g.drawPolygon(p.getDrawablePolygon());
                 }
             }else{
-                g2.setStroke(bs1);
+                g2.setStroke(solidLine);
                 g.drawPolygon(p.getDrawablePolygon());
             }
 
         }
 
-        g2.setStroke(bs1);
+        g2.setStroke(solidLine);
     }
 }

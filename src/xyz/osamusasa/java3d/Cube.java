@@ -18,7 +18,7 @@ public class Cube {
      * face[2] f-e-h-g
      * face[3] e-a-d-h
      * face[4] a-e-f-b
-     * face[5] d-h-g-c
+     * face[5] d-c-g-h
      */
     private Polygon3D[] face;
 
